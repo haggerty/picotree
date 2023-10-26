@@ -12,6 +12,11 @@
 // Program to take the saved waveform csv files created by the Picoscope software and make a root file of them
 // Each trigger is in its own csv file, so this loops over all the csv files in the directory created by the Picoscope software
 // John Haggerty, BNL, 2019.02.07
+// John Haggerty, BNL, 2023-10-26
+// Pico changed their format from csv to tab delimited txt
+
+char delimiter = '\t';    
+TString ext = ".txt";
 
 const Int_t headerlines = 3;
 
@@ -36,10 +41,10 @@ onecsv csvtranslator( TString filename )
     std::string line;
 
     getline(ifs,firstline);
-    //  std::cout << firstline << std::endl;
+    //    std::cout << firstline << std::endl;
 
     // firstline looks like this: Time,Channel A,Channel B,Channel C
-    const Int_t nchan = count(firstline.begin(), firstline.end(), ',');
+    const Int_t nchan = count(firstline.begin(), firstline.end(), delimiter);
 
     // secondline looks like this: (ns),(V),(mV),(mV)
     getline(ifs,secondline);
@@ -58,7 +63,7 @@ onecsv csvtranslator( TString filename )
     while ( getline(ifs,line) ) {
         Int_t pos = 0;
         std::istringstream iss(line);
-        while ( getline(iss, token, ',')) {
+        while ( getline(iss, token, delimiter)) {
             //    std::cout << token << std::endl;
             //    std::cout << pos << std::endl;
             if ( pos == 0 ) {
@@ -98,7 +103,7 @@ Int_t picocsv2ttree( TString directory )
 
     // remove / if it's at the end of the directory name 
     if ( directory.EndsWith("/") ) directory.Chop();
-    std::cout << "csv files in " << directory << std::endl;
+    std::cout << ext << " files in " << directory << std::endl;
     TSystem *sys = new TSystem();
     TString rootfilename = directory + ".root";
     // this will make the root file in the pwd
@@ -110,7 +115,6 @@ Int_t picocsv2ttree( TString directory )
     // the following will loop over all the data files in numerical order
     Int_t nfiles = 0;
     Int_t fileno = 0;
-    TString ext = ".csv";
     TSystemDirectory dir(directory, directory); 
     TList *files = dir.GetListOfFiles(); 
     if (files) { 
